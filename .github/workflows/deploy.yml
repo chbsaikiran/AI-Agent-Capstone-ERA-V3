@@ -39,13 +39,15 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             # Ensure Git is initialized
+            cd /github/workspace || exit 1
             if [ ! -d ".git" ]; then
-              echo "Not a git repo. Aborting."
-              exit 1
+              echo "Initializing Git repo locally"
+              git init
             fi
       
             # Navigate to the correct folder
-            cd /home/ubuntu/my-project || exit 1
+            cd /home/ubuntu || exit 1
+            mkdir my-project || exit 1
       
             # Make sure backend folder exists
             if [ ! -d "backend" ]; then
