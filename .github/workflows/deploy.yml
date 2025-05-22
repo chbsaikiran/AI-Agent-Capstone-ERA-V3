@@ -14,14 +14,15 @@ jobs:
 
       - name: Push frontend to Hugging Face
         run: |
-          git config --global user.email "you@example.com"
           git config --global user.name "Your Name"
+          git config --global user.email "you@example.com"
           cd frontend
           git init
+          git checkout -b main  # 👈 Create the main branch
           git remote add origin https://huggingface.co/spaces/chbsaikiran/Chat_With_PDF
           git add .
           git commit -m "Auto deploy frontend"
-          git push --force origin main
+          git push --force https://chbsaikiran:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/chbsaikiran/Chat_With_PDF main
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
