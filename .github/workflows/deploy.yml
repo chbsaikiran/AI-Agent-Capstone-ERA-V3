@@ -39,23 +39,17 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             # Ensure Git is initialized
-            cd /github/workspace || exit 1
             if [ ! -d ".git" ]; then
               echo "Initializing Git repo locally"
               git init
             fi
-      
-            # Navigate to the correct folder
-            cd /home/ubuntu || exit 1
-            mkdir my-project || exit 1
-      
-            # Make sure backend folder exists
+            
             if [ ! -d "backend" ]; then
               echo "Missing 'backend' directory. Aborting."
               exit 1
             fi
             cd backend
-      
+
             # Install python3.10-venv if not available
             if ! python3.10 -m venv --help > /dev/null 2>&1; then
               sudo apt update
