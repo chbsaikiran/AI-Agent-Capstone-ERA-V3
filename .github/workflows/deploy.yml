@@ -25,24 +25,64 @@ jobs:
           git push --force https://chbsaikiran:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/chbsaikiran/Chat_With_PDF main
 
   deploy-backend:
-    name: Deploy to AWS EC2
+    name: Deploy App to EC2
+
+on:
+  push:
+    branches:
+      - main  # Change to your actual branch if different
+
+jobs:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy backend via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            mkdir my-project
-            cd my-project
-            git pull origin main
-            cd backend
-            sudo apt install python3.10 python3.10-venv
-            python3.10 -m venv venv310
-            source venv310/bin/activate
-            pip install -r requirements.txt
-            # Restart your backend process
-            pkill -f app.py || true
-            nohup python app.py > output.log 2>&1 &
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Setup SSH
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          # Ensure Git is initialized
+          if [ ! -d ".git" ]; then
+            echo "Not a git repo. Aborting."
+            exit 1
+          fi
+
+          # Navigate to the correct folder
+          cd /home/ubuntu/my-project || exit 1
+
+          # Make sure backend folder exists
+          if [ ! -d "backend" ]; then
+            echo "Missing 'backend' directory. Aborting."
+            exit 1
+          fi
+          cd backend
+
+          # Install python3.10-venv if not available
+          if ! python3.10 -m venv --help > /dev/null 2>&1; then
+            sudo apt update
+            sudo apt install -y python3.10-venv
+          fi
+
+          # Set up virtual environment
+          python3.10 -m venv venv310
+          source venv310/bin/activate
+
+          # Ensure requirements.txt exists
+          if [ ! -f "requirements.txt" ]; then
+            echo "requirements.txt not found! Aborting."
+            exit 1
+          fi
+
+          # Install dependencies
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          python app.py
+
+          # Add your app-specific start command below (e.g., gunicorn or python main.py)
+          echo "Deployment successful"
