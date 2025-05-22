@@ -12,4 +12,6 @@ __pycache__
 *.pyd
 *.pyw
 *.pyz
+github_key
+github_key.pub
 
