@@ -1,0 +1,49 @@
+name: CI/CD Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-frontend:
+    name: Deploy to Hugging Face Spaces
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Push frontend to Hugging Face
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          cd frontend
+          git init
+          git remote add origin https://huggingface.co/spaces/chbsaikiran/Chat_With_PDF
+          git add .
+          git commit -m "Auto deploy frontend"
+          git push --force origin main
+        env:
+          HF_TOKEN: ${{ HF_TOKEN }}
+
+  deploy-backend:
+    name: Deploy to AWS EC2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy backend via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ EC2_HOST }}
+          username: ubuntu
+          key: ${{ EC2_SSH_KEY }}
+          script: |
+            mkdir my-project
+            cd my-project
+            git pull origin main
+            cd backend
+            sudo apt install python3.10 python3.10-venv
+            python3.10 -m venv venv310
+            source venv310/bin/activate
+            pip install -r requirements.txt
+            # Restart your backend process
+            pkill -f app.py || true
+            nohup python app.py > output.log 2>&1 &
