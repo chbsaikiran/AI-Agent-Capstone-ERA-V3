@@ -23,7 +23,7 @@ jobs:
           git commit -m "Auto deploy frontend"
           git push --force origin main
         env:
-          HF_TOKEN: ${{ HF_TOKEN }}
+          HF_TOKEN: ${{ scerets.HF_TOKEN }}
 
   deploy-backend:
     name: Deploy to AWS EC2
@@ -32,9 +32,9 @@ jobs:
       - name: Deploy backend via SSH
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ EC2_HOST }}
+          host: ${{ scerets.EC2_HOST }}
           username: ubuntu
-          key: ${{ EC2_SSH_KEY }}
+          key: ${{ scerets.EC2_SSH_KEY }}
           script: |
             mkdir my-project
             cd my-project
